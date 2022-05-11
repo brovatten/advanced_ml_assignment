@@ -10,6 +10,7 @@ class Env(gym.Env):
         self.large = large  # payout at end of chain for 'forwards' action
         self.state = 0  # Start at beginning of the chain
         self.action_space = spaces.Discrete(2)
+        #print(self.action_space)
         self.observation_space = spaces.Discrete(self.n)
 
     def step(self, action):
