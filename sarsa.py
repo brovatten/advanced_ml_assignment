@@ -17,23 +17,18 @@ class Agent(object):  # Keep the class name!
         self.epsilon = 0.05
         self.Q = np.zeros((state_space, action_space))
         self.state_n = (0, 0)
-        # self.last_action = -1
         self.last_state = 0
 
         self.last_action = self.choose_action(0)
 
     def observe(self, state, reward, done):
-        # state = S'
-        # last-state = S
-        # reward = R
-        # self.action = A
-        next_action = self.choose_action(state)
+        action = self.choose_action(state)
         self.Q[self.last_state][self.last_action] += self.alpha * (
             reward
-            + self.gamma * self.Q[state][next_action]
+            + self.gamma * self.Q[state][action]
             - self.Q[self.last_state][self.last_action]
         )
-        self.last_action = next_action
+        self.last_action = action
 
     def choose_action(self, state):
         random_action = np.random.randint(self.action_space)

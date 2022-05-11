@@ -6,7 +6,7 @@ import numpy as np
 # 3: UP
 
 
-class Qlearning(object):  # Keep the class name!
+class Agent(object):  # Keep the class name!
     """The world's simplest agent!"""
 
     def __init__(self, state_space, action_space):
@@ -15,7 +15,6 @@ class Qlearning(object):  # Keep the class name!
         self.alpha = 0.7
         self.gamma = 0.95
         self.epsilon = 0.05
-        # self.Q = [[0.0]*action_space]*state_space
         self.Q = np.zeros((state_space, action_space))
         self.method = "Qlearning"
         self.state_n = (0, 0)
