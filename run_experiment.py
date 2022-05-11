@@ -38,8 +38,9 @@ agent = agentfile.Agent(state_dim, action_dim)
 
 observation = env.reset()
 plot = plot_averages.plot_averages()
-for _ in range(10000):
-    # env.render()
+for i in range(100_000):
+    # if i > 5000:
+    #     env.render()
     action = agent.act(observation)  # your agent here (this takes random actions)
     observation, reward, done, info = env.step(action)
     agent.observe(observation, reward, done)
