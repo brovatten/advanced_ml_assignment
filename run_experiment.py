@@ -52,17 +52,19 @@ def run_agent():
             # print(agent.Q)
             observation = env.reset()
 
-    return keeper.averages
+    return keeper
 
 
-averages = [run_agent() for _ in range(5)]
-episodes = min(map(len, averages))
-averages = np.array([x[:episodes] for x in averages])
+keepers = [run_agent() for _ in range(5)]
+episodes = min([len(x.values) for x in keepers])
+averages = np.array([x.averages[:episodes] for x in keepers])
+rewards = np.array([x.averages[:episodes] for x in keepers])
 env.close()
 
-print(averages.shape)
+for i in range(len(rewards[0])):
+    print(rewards[:, i], "mean", rewards[:, i].mean(), "std", rewards[:, i].std())
 mean = averages.mean(axis=0)
-conf = 1.96 * averages.std(axis=0)
+conf = 1.96 * rewards.std(axis=0)
 plt.fill_between(range(len(mean)), mean - conf, mean + conf, alpha=0.2, color="grey")
 plt.plot(mean)
 plt.show()
