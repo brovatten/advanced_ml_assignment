@@ -1,8 +1,10 @@
 import argparse
 import gym
 import importlib.util
-import time
-import plot_averages
+import numpy as np
+import matplotlib.pyplot as plt
+
+from plot_averages import ValueKeeper
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -34,20 +36,35 @@ print(action_dim)
 print(state_dim)
 
 
-agent = agentfile.Agent(state_dim, action_dim)
+def run_agent():
+    agent = agentfile.Agent(state_dim, action_dim)
 
-observation = env.reset()
-plot = plot_averages.plot_averages()
-for i in range(100_000):
-    # if i > 5000:
-    #     env.render()
-    action = agent.act(observation)  # your agent here (this takes random actions)
-    observation, reward, done, info = env.step(action)
-    agent.observe(observation, reward, done)
+    observation = env.reset()
+    keeper = ValueKeeper()
 
-    if done:
-        plot.add_value(reward)
-        print(agent.Q)
-        observation = env.reset()
-plot.plot_averages()
+    for _ in range(10_000):
+        action = agent.act(observation)  # your agent here (this takes random actions)
+        observation, reward, done, info = env.step(action)
+        agent.observe(observation, reward, done)
+
+        if done:
+            keeper.add_value(reward)
+            # print(agent.Q)
+            observation = env.reset()
+
+    return keeper.averages
+
+
+averages = [run_agent() for _ in range(5)]
+episodes = min(map(len, averages))
+averages = np.array([x[:episodes] for x in averages])
 env.close()
+
+print(averages.shape)
+mean = averages.mean(axis=0)
+conf = 1.96 * averages.std(axis=0)
+plt.fill_between(range(len(mean)), mean - conf, mean + conf, alpha=0.2, color="grey")
+plt.plot(mean)
+plt.show()
+plt.draw()
+plt.close()
