@@ -1,3 +1,4 @@
+import sys
 import argparse
 import gym
 import importlib.util
@@ -35,14 +36,19 @@ state_dim = env.observation_space.n
 print(action_dim)
 print(state_dim)
 
+agent_type =  str(sys.argv[2])[:-3]
+iterations = 20_000
+alpha = 0.1
+no_of_runs = 5
+#print(agent_type)
 
 def run_agent():
-    agent = agentfile.Agent(state_dim, action_dim)
+    agent = agentfile.Agent(state_dim, action_dim,alpha)
 
     observation = env.reset()
     keeper = ValueKeeper()
 
-    for _ in range(10_000):
+    for _ in range(iterations):
         action = agent.act(observation)  # your agent here (this takes random actions)
         observation, reward, done, info = env.step(action)
         agent.observe(observation, reward, done)
@@ -55,18 +61,22 @@ def run_agent():
     return keeper
 
 
-keepers = [run_agent() for _ in range(5)]
+keepers = [run_agent() for _ in range(no_of_runs)]
 episodes = min([len(x.values) for x in keepers])
 averages = np.array([x.averages[:episodes] for x in keepers])
 rewards = np.array([x.averages[:episodes] for x in keepers])
 env.close()
 
-for i in range(len(rewards[0])):
-    print(rewards[:, i], "mean", rewards[:, i].mean(), "std", rewards[:, i].std())
+#for i in range(len(rewards[0])):
+    #print(rewards[:, i], "mean", rewards[:, i].mean(), "std", rewards[:, i].std())
 mean = averages.mean(axis=0)
 conf = 1.96 * rewards.std(axis=0)
-plt.fill_between(range(len(mean)), mean - conf, mean + conf, alpha=0.2, color="grey")
-plt.plot(mean)
+plt.fill_between(range(len(mean)), mean - conf, mean + conf, alpha=0.2, color="grey", label = 'Confidence interval')
+plt.title('Plot of ' + str(iterations) + ' steps of agent ' + str(agent_type))
+plt.ylabel('Reward')
+plt.xlabel('Episodes')
+plt.plot(mean, label='Moving average (100)\n of rewards')
+plt.legend()
 plt.show()
 plt.draw()
 plt.close()

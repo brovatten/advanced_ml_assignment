@@ -9,10 +9,10 @@ import numpy as np
 class Agent(object):  # Keep the class name!
     """Sarsa agent"""
 
-    def __init__(self, state_space, action_space):
+    def __init__(self, state_space, action_space, alpha=0.7):
         self.action_space = action_space
         self.state_space = state_space
-        self.alpha = 0.7
+        self.alpha = alpha
         self.gamma = 0.95
         self.epsilon = 0.05
         self.Q = np.zeros((state_space, action_space))
@@ -29,6 +29,8 @@ class Agent(object):  # Keep the class name!
             - self.Q[self.last_state][self.last_action]
         )
         self.last_action = action
+        if done: 
+            self.Q[state,:] = 0 
 
     def choose_action(self, state):
         random_action = np.random.randint(self.action_space)

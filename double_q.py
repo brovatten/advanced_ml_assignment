@@ -10,18 +10,21 @@ import random
 class Agent(object):  # Keep the class name!
     """The world's simplest agent!"""
 
-    def __init__(self, state_space, action_space):
+    def __init__(self, state_space, action_space, alpha=0.7):
         self.action_space = action_space
         self.state_space = state_space
-        self.alpha = 0.7
+        self.alpha = alpha
         self.gamma = 0.95
         self.epsilon = 0.05
-        self.Q = (
-            np.ones((state_space, action_space)),
-            np.ones((state_space, action_space)),
-        )
-        self.Q[0][15, :] = 0
-        self.Q[1][15, :] = 0
+        self.Q = (np.random.uniform(size=(state_space, action_space)),
+        np.random.uniform(size=(state_space, action_space)))
+        #print(self.Q)
+        #self.Q = (
+        #    np.ones((state_space, action_space)),
+        #    np.ones((state_space, action_space)),
+        #)
+        #self.Q[0][15, :] = 0
+        #self.Q[1][15, :] = 0
         self.method = "Double-Q"
         self.state_n = (0, 0)
         self.last_action = -1
@@ -40,6 +43,10 @@ class Agent(object):  # Keep the class name!
             + self.gamma * self.Q[b][state, self.argmax_action(self.Q[a], state)]
             - self.Q[a][self.last_state, self.last_action]
         )
+
+        if done:
+            self.Q[0][state,:] = 0 
+            self.Q[1][state,:] = 0
 
     def act(self, state):
         self.last_state = state
