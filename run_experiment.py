@@ -1,11 +1,10 @@
-import sys
 import argparse
 import gym
 import importlib.util
-import numpy as np
 import matplotlib.pyplot as plt
-
-from plot_averages import ValueKeeper
+import numpy as np
+import vis
+from collections import deque
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -20,7 +19,7 @@ spec.loader.exec_module(agentfile)
 reward = []
 
 try:
-    env = gym.make(args.env, is_slippery=False)
+    env = gym.make(args.env, is_slippery=True)
     print("Loaded ", args.env)
 except:
     print(args.env + ":Env")
@@ -33,50 +32,40 @@ except:
 
 action_dim = env.action_space.n
 state_dim = env.observation_space.n
-print(action_dim)
-print(state_dim)
-
-agent_type =  str(sys.argv[2])[:-3]
-iterations = 20_000
-alpha = 0.1
-no_of_runs = 5
-#print(agent_type)
-
-def run_agent():
-    agent = agentfile.Agent(state_dim, action_dim,alpha)
-
-    observation = env.reset()
-    keeper = ValueKeeper()
-
-    for _ in range(iterations):
-        action = agent.act(observation)  # your agent here (this takes random actions)
-        observation, reward, done, info = env.step(action)
-        agent.observe(observation, reward, done)
-
-        if done:
-            keeper.add_value(reward)
-            # print(agent.Q)
-            observation = env.reset()
-
-    return keeper
 
 
-keepers = [run_agent() for _ in range(no_of_runs)]
-episodes = min([len(x.values) for x in keepers])
-averages = np.array([x.averages[:episodes] for x in keepers])
-rewards = np.array([x.averages[:episodes] for x in keepers])
+def run_agent(k):
+    agent = agentfile.Agent(state_dim, action_dim)
+    reward_queue = deque(maxlen=100)
+
+    step = 0
+    for i in range(episodes):
+        done = False
+        observation = env.reset()
+        episode_reward = 0
+        while not done:
+            step += 1
+            # agent.Q = vis.A.copy()
+            action = agent.act(observation)
+            observation, reward, done, info = env.step(action)
+            agent.observe(observation, reward, done)
+            episode_reward += reward
+
+        reward_queue.append(episode_reward)
+        rewards[k, i] = np.mean(reward_queue)
+
+    print(f"Agent {k} done with {step} steps")
+
+
+episodes = 15_000
+rewards = np.zeros((5, episodes))
+for k in range(5):
+    run_agent(k)
 env.close()
 
-#for i in range(len(rewards[0])):
-    #print(rewards[:, i], "mean", rewards[:, i].mean(), "std", rewards[:, i].std())
-mean = averages.mean(axis=0)
-conf = 1.96 * rewards.std(axis=0)
-plt.fill_between(range(len(mean)), mean - conf, mean + conf, alpha=0.2, color="grey", label = 'Confidence interval')
-plt.title('Plot of ' + str(iterations) + ' steps of agent ' + str(agent_type))
-plt.ylabel('Reward')
-plt.xlabel('Episodes')
-plt.plot(mean, label='Moving average (100)\n of rewards')
+for i, xs in enumerate(rewards):
+    plt.plot(xs, alpha=0.2, label=f"Agent {i}")
+plt.plot(rewards.mean(axis=0), label="Average of all agents")
 plt.legend()
+plt.plot()
 plt.show()
-plt.draw()
-plt.close()
