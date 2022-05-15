@@ -38,19 +38,15 @@ state_dim = env.observation_space.n
 def run_agent(k):
     print(f"Training agent {k}")
     agent = agentfile.Agent(state_dim, action_dim)
-    # print(vis.show(agent.Q))
-    reward_queue = deque(maxlen=100)
+    reward_queue = deque(maxlen=1000)
 
     step = 0
     for i in tqdm(range(episodes)):
         done = False
         observation = env.reset()
         episode_reward = 0
-        j = 0
         while True:
-            j += 1
             step += 1
-            # agent.Q = vis.A.copy()
             action = agent.act(observation)
             observation, reward, done, info = env.step(action)
             agent.observe(observation, reward, done)
@@ -62,13 +58,9 @@ def run_agent(k):
         rewards[k, i] = np.mean(reward_queue)
 
     print(f"Agent {k} done with {step} steps")
-    # print(vis.show(agent.Q))
 
 
-print(f"Known good Q")
-print(vis.show(vis.A))
-
-episodes = 20_000
+episodes = 1_00_000
 agents = 2
 
 rewards = np.zeros((agents, episodes))
@@ -79,7 +71,6 @@ env.close()
 for i, xs in enumerate(rewards):
     plt.plot(xs, alpha=0.2, label=f"Agent {i}")
 plt.plot(rewards.mean(axis=0), label="Average of all agents")
-# plt.plot(0.01 + (1.0 - 0.01) * np.exp(-0.005 * np.arange(episodes)), label="Epsilon")
 plt.legend()
 plt.plot()
 plt.show()
