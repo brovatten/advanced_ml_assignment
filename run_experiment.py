@@ -6,6 +6,7 @@ import numpy as np
 import vis
 from collections import deque
 from tqdm import tqdm
+import scipy.stats as st
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -57,20 +58,37 @@ def run_agent(k):
         reward_queue.append(episode_reward)
         rewards[k, i] = np.mean(reward_queue)
 
-    print(f"Agent {k} done with {step} steps")
+    print(f"Agent {1+k} done with {step} steps")
 
 
-episodes = 1_00_000
-agents = 2
+episodes = 10_000
+agents = 5
 
 rewards = np.zeros((agents, episodes))
 for k in range(agents):
     run_agent(k)
 env.close()
 
+mean = rewards.mean(axis=0)
+conf = np.array(
+    [
+        st.t.interval(0.95, len(a) - 1, loc=np.mean(a), scale=st.sem(a))
+        for a in rewards.T
+    ]
+)
+plt.fill_between(
+    range(len(mean)),
+    conf[:, 0],
+    conf[:, 1],
+    alpha=0.2,
+    color="grey",
+    label=r"95% confidence interval",
+)
 for i, xs in enumerate(rewards):
-    plt.plot(xs, alpha=0.2, label=f"Agent {i}")
-plt.plot(rewards.mean(axis=0), label="Average of all agents")
+    plt.plot(xs, alpha=0.2, label=f"Agent {1+i}")
+plt.plot(mean, label="Average of all agents")
+plt.xlabel("Episodes")
+plt.ylabel("Reward")
 plt.legend()
 plt.plot()
 plt.show()
