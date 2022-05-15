@@ -69,8 +69,10 @@ print(f"Known good Q")
 print(vis.show(vis.A))
 
 episodes = 20_000
-rewards = np.zeros((2, episodes))
-for k in range(2):
+agents = 2
+
+rewards = np.zeros((agents, episodes))
+for k in range(agents):
     run_agent(k)
 env.close()
 
