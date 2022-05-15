@@ -38,7 +38,7 @@ state_dim = env.observation_space.n
 def run_agent(k):
     print(f"Training agent {k}")
     agent = agentfile.Agent(state_dim, action_dim)
-    print(vis.show(agent.Q))
+    # print(vis.show(agent.Q))
     reward_queue = deque(maxlen=100)
 
     step = 0
@@ -46,28 +46,29 @@ def run_agent(k):
         done = False
         observation = env.reset()
         episode_reward = 0
-        while not done:
+        j = 0
+        while True:
+            j += 1
             step += 1
             # agent.Q = vis.A.copy()
             action = agent.act(observation)
             observation, reward, done, info = env.step(action)
             agent.observe(observation, reward, done)
             episode_reward += reward
-            # if step % 5000 == 0:
-            #     print(f"At step {step}")
-            #     print(vis.show(agent.Q))
+            if done:
+                break
 
         reward_queue.append(episode_reward)
         rewards[k, i] = np.mean(reward_queue)
 
     print(f"Agent {k} done with {step} steps")
-    print(vis.show(agent.Q))
+    # print(vis.show(agent.Q))
 
 
 print(f"Known good Q")
 print(vis.show(vis.A))
 
-episodes = 75_000
+episodes = 20_000
 rewards = np.zeros((2, episodes))
 for k in range(2):
     run_agent(k)
