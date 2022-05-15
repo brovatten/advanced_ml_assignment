@@ -55,11 +55,15 @@ def run_agent(k):
         rewards[k, i] = np.mean(reward_queue)
 
     print(f"Agent {k} done with {step} steps")
+    print(vis.show(agent.Q))
 
 
-episodes = 15_000
-rewards = np.zeros((5, episodes))
-for k in range(5):
+print(f"Known good Q")
+print(vis.show(vis.A))
+
+episodes = 20_000
+rewards = np.zeros((2, episodes))
+for k in range(2):
     run_agent(k)
 env.close()
 
