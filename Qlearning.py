@@ -9,7 +9,7 @@ import numpy as np
 class Agent(object):  # Keep the class name!
     """The world's simplest agent!"""
 
-    def __init__(self, state_space, action_space,alpha = 0.7):
+    def __init__(self, state_space, action_space, alpha=0.1):
         self.action_space = action_space
         self.state_space = state_space
         self.alpha = alpha
@@ -22,15 +22,14 @@ class Agent(object):  # Keep the class name!
         self.last_state = 0
 
     def observe(self, state, reward, done):
+        if done:
+            self.Q[state, :] = 0
+
         self.Q[self.last_state][self.last_action] += self.alpha * (
             reward
             + self.gamma * max(self.Q[state][:])
             - self.Q[self.last_state][self.last_action]
         )
-
-        ###???
-        if done:
-            self.Q[state,:] = 0 
 
     def act(self, observation):
         return self.Qlearning(observation)

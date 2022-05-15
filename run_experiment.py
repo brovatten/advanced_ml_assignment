@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import vis
 from collections import deque
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -35,11 +36,13 @@ state_dim = env.observation_space.n
 
 
 def run_agent(k):
+    print(f"Training agent {k}")
     agent = agentfile.Agent(state_dim, action_dim)
+    print(vis.show(agent.Q))
     reward_queue = deque(maxlen=100)
 
     step = 0
-    for i in range(episodes):
+    for i in tqdm(range(episodes)):
         done = False
         observation = env.reset()
         episode_reward = 0
@@ -50,6 +53,9 @@ def run_agent(k):
             observation, reward, done, info = env.step(action)
             agent.observe(observation, reward, done)
             episode_reward += reward
+            # if step % 5000 == 0:
+            #     print(f"At step {step}")
+            #     print(vis.show(agent.Q))
 
         reward_queue.append(episode_reward)
         rewards[k, i] = np.mean(reward_queue)
@@ -61,7 +67,7 @@ def run_agent(k):
 print(f"Known good Q")
 print(vis.show(vis.A))
 
-episodes = 20_000
+episodes = 75_000
 rewards = np.zeros((2, episodes))
 for k in range(2):
     run_agent(k)
@@ -70,6 +76,7 @@ env.close()
 for i, xs in enumerate(rewards):
     plt.plot(xs, alpha=0.2, label=f"Agent {i}")
 plt.plot(rewards.mean(axis=0), label="Average of all agents")
+# plt.plot(0.01 + (1.0 - 0.01) * np.exp(-0.005 * np.arange(episodes)), label="Epsilon")
 plt.legend()
 plt.plot()
 plt.show()
